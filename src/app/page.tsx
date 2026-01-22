@@ -8,11 +8,11 @@ import Navbar from "@/components/Navbar";
 // ============================================
 function Design1() {
   const videos = {
-    hero: "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038060/18_u4hwoe.mp4",
-    about: "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038045/35_gohawn.mp4",
-    feature: "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038049/27_f5tcak.mp4",
-    findPeople: "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038041/19_kuuyat.mp4",
-    whatIsnt: "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038038/11_l43mxb.mp4",
+    hero: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038060/18_u4hwoe.mp4",
+    about: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038045/35_gohawn.mp4",
+    feature: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038049/27_f5tcak.mp4",
+    findPeople: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038041/19_kuuyat.mp4",
+    whatIsnt: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038038/11_l43mxb.mp4",
   };
 
   return (
@@ -191,16 +191,16 @@ function Design1() {
 // ============================================
 function Design2() {
   const videos = [
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038038/222_iguibm.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038037/4_gvs32m.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038048/28_thd2s6.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038037/12_orj6tj.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038049/27_f5tcak.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038038/11_l43mxb.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038054/25_s0tdt8.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038041/19_kuuyat.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038045/35_gohawn.mp4",
-    "https://res.cloudinary.com/dzlnqcmqn/video/upload/v1769038060/18_u4hwoe.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038038/222_iguibm.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038037/4_gvs32m.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038048/28_thd2s6.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038037/12_orj6tj.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038049/27_f5tcak.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038038/11_l43mxb.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038054/25_s0tdt8.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038041/19_kuuyat.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038045/35_gohawn.mp4",
+    "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038060/18_u4hwoe.mp4",
   ];
 
   return (
