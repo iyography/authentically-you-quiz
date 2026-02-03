@@ -1,216 +1,266 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
+import { useEffect, useRef, useState } from "react";
 
-// Floating Dots Component
-function FloatingDots() {
-  const dots = [
-    { top: "10%", left: "5%", delay: "0s", size: "" },
-    { top: "20%", left: "15%", delay: "1s", size: "lg" },
-    { top: "15%", left: "85%", delay: "2s", size: "sm" },
-    { top: "30%", left: "90%", delay: "0.5s", size: "" },
-    { top: "40%", left: "8%", delay: "1.5s", size: "lg" },
-    { top: "50%", left: "92%", delay: "3s", size: "sm" },
-    { top: "60%", left: "3%", delay: "2.5s", size: "" },
-    { top: "70%", left: "88%", delay: "1s", size: "lg" },
-    { top: "75%", left: "12%", delay: "0s", size: "sm" },
-    { top: "85%", left: "95%", delay: "2s", size: "" },
-    { top: "25%", left: "50%", delay: "3.5s", size: "sm" },
-    { top: "55%", left: "45%", delay: "4s", size: "lg" },
-    { top: "80%", left: "55%", delay: "1.5s", size: "" },
-    { top: "5%", left: "70%", delay: "2.5s", size: "sm" },
-    { top: "45%", left: "25%", delay: "0.5s", size: "lg" },
-    { top: "65%", left: "75%", delay: "3s", size: "" },
-    { top: "90%", left: "30%", delay: "1s", size: "sm" },
-    { top: "35%", left: "60%", delay: "4s", size: "lg" },
-  ];
+// Generate poster image URL from Cloudinary video URL
+function getPosterFromVideo(videoUrl: string): string {
+  return videoUrl
+    .replace("/video/upload/q_auto,f_auto/", "/video/upload/so_0,f_jpg,q_auto/")
+    .replace(".mp4", ".jpg");
+}
+
+// AutoPlay Video component - hides video until playing to avoid play button
+function AutoPlayVideo({ src, className }: { src: string; className: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const posterUrl = getPosterFromVideo(src);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Force muted state (required for mobile autoplay)
+    video.muted = true;
+
+    // Show video when it starts playing
+    const handlePlaying = () => setIsPlaying(true);
+    video.addEventListener("playing", handlePlaying);
+
+    // Attempt to play
+    const playVideo = () => {
+      if (video.paused) {
+        video.play().catch(() => {});
+      }
+    };
+
+    // Try on various events
+    video.addEventListener("loadedmetadata", playVideo);
+    video.addEventListener("canplay", playVideo);
+    playVideo();
+
+    // Intersection Observer
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) playVideo();
+        });
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(video);
+
+    // User interaction fallback
+    const handleInteraction = () => playVideo();
+    document.addEventListener("touchstart", handleInteraction, { once: true, passive: true });
+    document.addEventListener("click", handleInteraction, { once: true });
+    document.addEventListener("scroll", handleInteraction, { once: true, passive: true });
+
+    return () => {
+      observer.disconnect();
+      video.removeEventListener("playing", handlePlaying);
+    };
+  }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {dots.map((dot, i) => (
-        <div
-          key={i}
-          className={`floating-dot ${dot.size === "lg" ? "floating-dot-lg" : dot.size === "sm" ? "floating-dot-sm" : ""}`}
-          style={{
-            top: dot.top,
-            left: dot.left,
-            animationDelay: dot.delay,
-          }}
-        />
-      ))}
+    <div className={className} style={{ backgroundImage: `url(${posterUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        controls={false}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${isPlaying ? "opacity-100" : "opacity-0"}`}
+      >
+        <source src={src} type="video/mp4" />
+      </video>
     </div>
   );
 }
 
+// ============================================
+// DESIGN 1: Dark Luxe (Current)
+// ============================================
+function Design1() {
+  const videos = {
+    hero: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038060/18_u4hwoe.mp4",
+    about: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038045/35_gohawn.mp4",
+    feature: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038049/27_f5tcak.mp4",
+    findPeople: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038041/19_kuuyat.mp4",
+    whatIsnt: "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038038/11_l43mxb.mp4",
+  };
+
+  return (
+    <div className="bg-[#0A0A0A] text-[#FAF6E3] relative">
+      {/* Hero */}
+      <section className="min-h-screen relative overflow-hidden flex items-center">
+        <AutoPlayVideo src={videos.hero} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+        <div
+          className="pointer-events-none absolute inset-0 z-10 opacity-[0.15]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          }}
+        />
+        <div className="relative z-20 max-w-5xl mx-auto px-8 py-32 text-center">
+          <h1 className="font-script text-7xl md:text-9xl lg:text-[12rem] leading-tight mb-8">
+            Recess
+          </h1>
+          <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-[#FAF6E3] max-w-3xl mx-auto mb-6 leading-relaxed">
+            Where Skool owners come to relax and unwind.
+          </p>
+          <p className="font-sans text-xl md:text-2xl text-[#FAF6E3]/70 max-w-2xl mx-auto mb-12">
+            Real relationships. Real support. Real connections.
+          </p>
+          <a href="https://www.skool.com/recess/about" className="inline-block font-sans font-semibold bg-[#D4A853] text-[#0A0A0A] px-12 py-4 rounded-full hover:bg-[#c49943] transition-colors">
+            Join Recess
+          </a>
+        </div>
+        <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
+          <span className="font-sans text-xs tracking-widest text-[#D4A853]/60">EST. 2026</span>
+          <span className="font-sans text-xs tracking-widest text-[#D4A853]/60">FOR SKOOL OWNERS ONLY</span>
+        </div>
+      </section>
+
+      {/* What Is Recess - Video & Text */}
+      <section id="why" className="grid lg:grid-cols-2">
+        <div className="aspect-square lg:aspect-auto lg:h-screen relative">
+          <AutoPlayVideo src={videos.about} className="absolute inset-0 w-full h-full object-cover" />
+        </div>
+        <div className="flex items-center justify-center p-12 lg:p-24">
+          <div className="max-w-lg">
+            <span className="font-sans text-sm tracking-[0.3em] uppercase text-[#D4A853] block mb-6">What Is Recess?</span>
+            <h2 className="font-serif text-4xl lg:text-5xl leading-relaxed mb-8">
+              A community I built to give back.
+            </h2>
+            <p className="font-sans text-lg text-[#FAF6E3]/60 leading-relaxed mb-6">
+              I grew Business Builders Club to Top 10 on Skool in 5 weeks. Over 2,000 members. Growth I never imagined.
+            </p>
+            <p className="font-sans text-lg text-[#FAF6E3]/60 leading-relaxed mb-6">
+              Not a place to struggle, but a place for people to find help, support, and advice to grow their communities.
+            </p>
+            <p className="font-serif text-2xl text-[#D4A853] italic">
+              So I built Recess. A place where Skool owners come to breathe.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* What Happens Here */}
+      <section id="features" className="py-24 px-8 bg-[#0F0F0F]">
+        <div className="max-w-6xl mx-auto">
+          <span className="font-sans text-sm tracking-[0.3em] uppercase text-[#D4A853] block mb-4 text-center">What Happens Here</span>
+          <div className="grid md:grid-cols-2 gap-8 mt-16">
+            <div className="p-10 border border-[#FAF6E3]/10 rounded-2xl">
+              <span className="text-4xl mb-4 block">🎯</span>
+              <h3 className="font-serif text-3xl mb-4">Weekly Skool Spotlight</h3>
+              <p className="font-sans text-lg text-[#FAF6E3]/60 leading-relaxed">
+                Every week, we feature one Skool. The whole community shows up to support, give feedback, and help it grow.
+              </p>
+            </div>
+            <div className="p-10 border border-[#FAF6E3]/10 rounded-2xl">
+              <span className="text-4xl mb-4 block">🤝</span>
+              <h3 className="font-serif text-3xl mb-4">Founder Pair-Ups</h3>
+              <p className="font-sans text-lg text-[#FAF6E3]/60 leading-relaxed">
+                Get matched with another Skool owner at your level. Accountability. Friendship. Someone who actually gets it.
+              </p>
+            </div>
+            <div className="p-10 border border-[#FAF6E3]/10 rounded-2xl">
+              <span className="text-4xl mb-4 block">🎉</span>
+              <h3 className="font-serif text-3xl mb-4">Friday Wins</h3>
+              <p className="font-sans text-lg text-[#FAF6E3]/60 leading-relaxed">
+                Every Friday, we celebrate the small stuff. First post. First member. First sale. Every win matters here.
+              </p>
+            </div>
+            <div className="p-10 border border-[#FAF6E3]/10 rounded-2xl">
+              <span className="text-4xl mb-4 block">💬</span>
+              <h3 className="font-serif text-3xl mb-4">Real Conversations</h3>
+              <p className="font-sans text-lg text-[#FAF6E3]/60 leading-relaxed">
+                No posturing. No highlight reels. Just honest talk about what&apos;s working, what&apos;s not, and what&apos;s next.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Video */}
+      <section className="py-20 px-6 lg:px-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="aspect-[21/9] rounded-2xl overflow-hidden">
+            <AutoPlayVideo src={videos.feature} className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </section>
+
+      {/* Find Your People */}
+      <section className="h-[70vh] relative">
+        <AutoPlayVideo src={videos.findPeople} className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+          <p className="font-script text-5xl md:text-7xl text-white text-center px-8">
+            Find your people.
+          </p>
+        </div>
+      </section>
+
+      {/* This Is For You */}
+      <section id="for-you" className="py-24 px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <span className="font-sans text-sm tracking-[0.3em] uppercase text-[#D4A853] block mb-6">This Is For You</span>
+          <p className="font-serif text-3xl lg:text-4xl leading-relaxed mb-8">
+            Whether you&apos;re just starting or scaling. Whether you have 5 members or 5,000. Whether you&apos;re figuring it out or crushing it.
+          </p>
+          <p className="font-sans text-xl text-[#FAF6E3]/70 italic">
+            If you&apos;re building a Skool, you belong here.
+          </p>
+        </div>
+      </section>
+
+      {/* What This Isn't */}
+      <section className="py-24 px-8 relative overflow-hidden">
+        <AutoPlayVideo src={videos.whatIsnt} className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <span className="font-sans text-sm tracking-[0.3em] uppercase text-[#D4A853] block mb-8">What This Isn&apos;t</span>
+          <p className="font-sans text-2xl text-[#FAF6E3]/80 mb-8">
+            Not a course. Not a content library. Not another place selling tactics.
+          </p>
+          <p className="font-serif text-4xl lg:text-5xl text-[#FAF6E3] italic">
+            This is rest. This is connection. This is Recess.
+          </p>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-32 px-8 text-center">
+        <span className="font-sans text-sm tracking-[0.5em] uppercase text-[#D4A853] block mb-8">Ready?</span>
+        <h2 className="font-serif text-5xl lg:text-6xl mb-10">
+          Take a break with us.
+        </h2>
+        <a href="https://www.skool.com/recess/about" className="inline-block font-sans font-semibold bg-[#D4A853] text-[#0A0A0A] px-14 py-5 rounded-full hover:bg-[#c49943] transition-colors text-xl">
+          Join Recess
+        </a>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-16 px-8 border-t border-[#FAF6E3]/10">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <span className="font-script text-3xl">Recess</span>
+          <span className="font-sans text-xs text-[#FAF6E3]/30">&copy; 2026 Recess. All rights reserved.</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+// ============================================
+// MAIN PAGE COMPONENT
+// ============================================
 export default function Home() {
   return (
     <>
       <Navbar />
-      <FloatingDots />
-      <div className="bg-[#1A1A1A] text-[#FFF8F0] relative">
-        {/* Hero */}
-        <section className="min-h-screen relative overflow-hidden flex items-center">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover opacity-90"
-          >
-            <source src="/bakery.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-[#1A1A1A]/50" />
-          <div className="relative z-20 max-w-5xl mx-auto px-8 py-32 text-center">
-            <h1 className="font-heading text-4xl md:text-6xl lg:text-8xl leading-tight mb-8">
-              The First Bakery School
-            </h1>
-            <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-[#FFF8F0] max-w-3xl mx-auto mb-6 leading-relaxed">
-              Learn to grow your bakery over $1M in annual sales in 90 days or less with proven systems.
-            </p>
-            <p className="font-sans text-xl md:text-2xl text-[#FFF8F0]/70 max-w-2xl mx-auto mb-12">
-              Real advice. Real growth. Real profits. No fluff — just what works.
-            </p>
-            <a href="https://www.skool.com/thefirstbakeryschool" className="inline-block font-sans font-semibold bg-[#8B2332] text-white px-12 py-4 rounded-full hover:bg-[#A52D3F] transition-colors">
-              Join Free
-            </a>
-          </div>
-          <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
-            <span className="font-sans text-xs tracking-widest text-[#8B2332]/60">BY MARIE TEMBY</span>
-            <span className="font-sans text-xs tracking-widest text-[#8B2332]/60">66 MEMBERS</span>
-          </div>
-        </section>
-
-        {/* About Marie */}
-        <section id="why" className="py-24 px-8">
-          <div className="max-w-4xl mx-auto">
-            <span className="font-sans text-sm tracking-[0.3em] uppercase text-[#8B2332] block mb-6 text-center">Meet Your Instructor</span>
-            <div className="text-center">
-              <h2 className="font-heading text-3xl lg:text-4xl leading-relaxed mb-8">
-                28+ Years. $50M+ in Sales.
-              </h2>
-              <p className="font-sans text-lg text-[#FFF8F0]/60 leading-relaxed mb-6">
-                I&apos;m a #1 best selling author who has owned bakeries for over 28 years and generated more than $50 million in sales.
-              </p>
-              <p className="font-sans text-lg text-[#FFF8F0]/60 leading-relaxed mb-6">
-                I turn stuck businesses & staff into profitable, high performing teams. Now I&apos;m teaching all of it.
-              </p>
-              <p className="font-serif text-2xl text-[#8B2332] italic">
-                I started as a beginner coach 3.5 years ago and won Rookie Coach of the Year.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* What You'll Learn */}
-        <section id="features" className="py-24 px-8 bg-[#141414]">
-          <div className="max-w-6xl mx-auto">
-            <span className="font-sans text-sm tracking-[0.3em] uppercase text-[#8B2332] block mb-4 text-center">What You&apos;ll Learn</span>
-            <div className="grid md:grid-cols-2 gap-8 mt-16">
-              <div className="p-10 border border-[#FFF8F0]/10 rounded-2xl">
-                <span className="text-4xl mb-4 block">📈</span>
-                <h3 className="font-heading text-2xl mb-4">1% Strategy</h3>
-                <p className="font-sans text-lg text-[#FFF8F0]/60 leading-relaxed">
-                  Scale your bakery using the proven 1% strategy that compounds into massive growth.
-                </p>
-              </div>
-              <div className="p-10 border border-[#FFF8F0]/10 rounded-2xl">
-                <span className="text-4xl mb-4 block">👥</span>
-                <h3 className="font-heading text-2xl mb-4">Staff Training</h3>
-                <p className="font-sans text-lg text-[#FFF8F0]/60 leading-relaxed">
-                  World class staff training methods that transform your team into high performers.
-                </p>
-              </div>
-              <div className="p-10 border border-[#FFF8F0]/10 rounded-2xl">
-                <span className="text-4xl mb-4 block">⚖️</span>
-                <h3 className="font-heading text-2xl mb-4">Work/Life Balance</h3>
-                <p className="font-sans text-lg text-[#FFF8F0]/60 leading-relaxed">
-                  How to find work/life balance in the mix of running a successful bakery.
-                </p>
-              </div>
-              <div className="p-10 border border-[#FFF8F0]/10 rounded-2xl">
-                <span className="text-4xl mb-4 block">💰</span>
-                <h3 className="font-heading text-2xl mb-4">10% Sales Boost</h3>
-                <p className="font-sans text-lg text-[#FFF8F0]/60 leading-relaxed">
-                  How to increase sales by at least 10% in one day with simple techniques.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Mid Statement */}
-        <section className="py-32 px-8 relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#8B2332]/10 via-transparent to-[#8B2332]/10" />
-          <div className="relative z-10 max-w-4xl mx-auto text-center">
-            <p className="font-heading text-3xl md:text-5xl text-white">
-              Ensure every visitor who walks in your bakery returns.
-            </p>
-          </div>
-        </section>
-
-        {/* What's Inside */}
-        <section id="for-you" className="py-24 px-8 bg-[#141414]">
-          <div className="max-w-4xl mx-auto text-center">
-            <span className="font-sans text-sm tracking-[0.3em] uppercase text-[#8B2332] block mb-6">What&apos;s Inside (Worth $30K+)</span>
-            <div className="grid md:grid-cols-2 gap-6 mt-12 text-left">
-              <div className="p-6 border border-[#8B2332]/30 rounded-xl">
-                <span className="text-2xl mr-3">🥯</span>
-                <span className="font-sans text-lg">Weekly bakery hacks</span>
-              </div>
-              <div className="p-6 border border-[#8B2332]/30 rounded-xl">
-                <span className="text-2xl mr-3">🛣️</span>
-                <span className="font-sans text-lg">Custom 90 day bakery roadmap</span>
-              </div>
-              <div className="p-6 border border-[#8B2332]/30 rounded-xl">
-                <span className="text-2xl mr-3">🎂</span>
-                <span className="font-sans text-lg">The Bakery Box: 100+ world class recipes</span>
-              </div>
-              <div className="p-6 border border-[#8B2332]/30 rounded-xl">
-                <span className="text-2xl mr-3">🍞</span>
-                <span className="font-sans text-lg">Turn one customer into returning family</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Community */}
-        <section className="py-24 px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <span className="font-sans text-sm tracking-[0.3em] uppercase text-[#8B2332] block mb-8">Safe Space to Grow</span>
-            <p className="font-serif text-3xl lg:text-4xl text-[#FFF8F0] mb-8">
-              This is a safe place to mix with other bakery owners. Share, learn, and grow without judgment.
-            </p>
-            <p className="font-sans text-xl text-[#FFF8F0]/70 italic">
-              If you own a bakery, this community is for you.
-            </p>
-          </div>
-        </section>
-
-        {/* Final CTA */}
-        <section className="py-32 px-8 text-center relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-[#8B2332]/20 to-transparent" />
-          <div className="relative z-10">
-            <span className="font-sans text-sm tracking-[0.5em] uppercase text-[#8B2332] block mb-8">Your Move</span>
-            <h2 className="font-heading text-3xl lg:text-4xl mb-10">
-              Build your bakery empire with owners who&apos;ve been there.
-            </h2>
-            <a href="https://www.skool.com/thefirstbakeryschool" className="inline-block font-sans font-semibold bg-[#8B2332] text-white px-14 py-5 rounded-full hover:bg-[#A52D3F] transition-colors text-xl">
-              Join Free
-            </a>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="py-16 px-8 border-t border-[#FFF8F0]/10">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-            <span className="font-heading text-xl">The First Bakery School</span>
-            <span className="font-sans text-xs text-[#FFF8F0]/30">
-              <a href="/admin" className="hover:text-[#FFF8F0]/50 transition-colors">&copy;</a> 2026 The First Bakery School. All rights reserved.
-            </span>
-          </div>
-        </footer>
-      </div>
+      <Design1 />
     </>
   );
 }

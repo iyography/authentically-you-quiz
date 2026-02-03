@@ -47,17 +47,3 @@ public/videos/*.mp4
 # Large video files
 rvids/
 public/videos/
-*.mp4
-public/*.mp4
-
-# Personal/temp files
-guide.pdf
-*.docx
-meeting.json
-logo.jpg
-marie.jpg
-online.png
-untitled folder/
-recess.code-workspace
-QUIZ_QUESTIONS.md
-supabase-setup.sql

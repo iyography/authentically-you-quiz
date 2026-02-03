@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, Sparkles } from "lucide-react";
 
 // Main hero video background
@@ -86,163 +87,47 @@ interface FamilyMember {
   name: string;
   superpower: string;
   needsHelp?: string;
+  image?: string;
 }
 
 const familyMembers: FamilyMember[] = [
-  {
-    name: "Bill Widmer",
-    superpower: "Believing in people so fiercely they believe in themselves, marketing (community, SEO/GEO), copywriting, connecting people",
-    needsHelp: "Building systems that free up time, personalized outreach at scale"
-  },
-  {
-    name: "Melissa Boster",
-    superpower: "Helping women in perimenopause and menopause find relief and prevent long term health problems",
-    needsHelp: "Traffic and helping new members find the community"
-  },
-  {
-    name: "Tim Adam",
-    superpower: "Everything Pinterest, running a Ninja Warrior Gym, Skool Group engagement, organic Skool group growth",
-    needsHelp: "Converting more members to paid tiers"
-  },
-  {
-    name: "Julianne Anderson",
-    superpower: "Storytelling, connecting with people, making people laugh",
-  },
-  {
-    name: "Matthew Burns",
-    superpower: "Finding parked cars and building customer journeys (monday.com consulting), AI discoverability workshops",
-    needsHelp: "Finding more community builders to collaborate with"
-  },
-  {
-    name: "Desmond Spann",
-    superpower: "The art of fulfillment, inner work, emotional wellbeing, poetry, freestyling, growth rap",
-    needsHelp: "Upgrades to paid memberships"
-  },
-  {
-    name: "Dr. Melissa Partaka",
-    superpower: "Helping others discover their passions and put them into action to create a life around them",
-    needsHelp: "Automation, particularly a chat buddy for responses"
-  },
-  {
-    name: "Nick Nebelsky",
-    superpower: "Using humor and sincerity to build relationships, being direct, witty, and observant, creating AI films",
-    needsHelp: "Structure for ideas, sales strategy"
-  },
-  {
-    name: "Tony Sibbald",
-    superpower: "Helping people calm their mind and body, let go of anxiety and exhaustion, feel happier and more alive",
-    needsHelp: "Believing in doing the same online as in-person"
-  },
-  {
-    name: "Theresa Elliott",
-    superpower: "Idea generation, seeing real potential and opportunities where others see obstacles, creating routines and strategies",
-    needsHelp: "Basic back-end web development skills"
-  },
-  {
-    name: "Elfina Luk",
-    superpower: "Seeing the deeper truth to a person's being, helping them show up as their true selves with deep self love",
-    needsHelp: "Marketing and promotion"
-  },
-  {
-    name: "Rodney Thompson",
-    superpower: "Turning messy ideas into simple, repeatable systems around planning, decision-making, and staying steady",
-    needsHelp: "Communicating systems clearly"
-  },
-  {
-    name: "Jeniece Drake",
-    superpower: "Helping people take their ideas and build out a workable roadmap to make it a reality",
-  },
-  {
-    name: "Elmo Anticamara",
-    superpower: "General Virtual Assistant turning daily tasks into organized, stress-free operations",
-    needsHelp: "Scaling systems and workflows for multiple clients"
-  },
-  {
-    name: "Khent Lj",
-    superpower: "Making strengths visible and turning knowledge into actionable help",
-  },
-  {
-    name: "Ma. Socorro Castro",
-    superpower: "Helping clients get results with services provided",
-    needsHelp: "Streamlining content creation and marketing"
-  },
-  {
-    name: "Suzanne Bell",
-    superpower: "Mole whacker - taking care of whatever comes up while doing other things, quick task-switching",
-  },
-  {
-    name: "Vinayak Ramesh",
-    superpower: "Amazon KDP publishing (non-fiction), faceless YT automation channels, copywriting/email marketing",
-    needsHelp: "Ways to monetize newsletter"
-  },
-  {
-    name: "Iris Ocariza",
-    superpower: "Being patient",
-    needsHelp: "Learning n8n and vibe coding"
-  },
-  {
-    name: "Tim Norris",
-    superpower: "Creativity in passion",
-    needsHelp: "Packaging value simply so people see it"
-  },
-  {
-    name: "Sybil Hall",
-    superpower: "Empathy and listening",
-    needsHelp: "Getting more premium and VIP members"
-  },
-  {
-    name: "Adam Formanek",
-    superpower: "Turning ideas for games into real, repeatable experiences - engineering rules, props, scoring, pacing",
-    needsHelp: "Starting a Skool community"
-  },
-  {
-    name: "Kerry Souter",
-    superpower: "Writing comedy and storytelling",
-    needsHelp: "Being more present as opposed to performative"
-  },
-  {
-    name: "Dr. Peninah Wood Ph.D",
-    superpower: "Intelligence and a quick sense of humor",
-    needsHelp: "Getting members"
-  },
-  {
-    name: "Elizabeth Jaworski",
-    superpower: "Self-awareness and growth mindset",
-    needsHelp: "Working on inner critic"
-  },
-  {
-    name: "Liisa Reimann",
-    superpower: "The Funnel Fixer - asking clarifying questions about marketing ecosystems, connecting the dots, steering dragon boats",
-    needsHelp: "Business back-end strategy, financial forecasting"
-  },
-  {
-    name: "Nathaniel Parant",
-    superpower: "Articulate expression & imagination - a synthesis of Heartist, Cosmedian, and Mystic",
-    needsHelp: "System design that organizes a team"
-  },
-  {
-    name: "Benjamin Ross",
-    superpower: "Fast scaling, viral magnets",
-    needsHelp: "Traffic and visibility"
-  },
-  {
-    name: "Lisa Drennon",
-    superpower: "Wealth Activator - turning money chaos into calm, strategic cash flow without restrictive budgets or shame",
-    needsHelp: "Expanding visibility and collaborations"
-  },
-  {
-    name: "Eric Bryan Gonzales",
-    superpower: "Seeing beyond the obvious - the potential and opportunity in people and business along with the path to get there",
-    needsHelp: "Starting networking and live calls"
-  },
-  {
-    name: "London Patton",
-    superpower: "Building systems with ChatGPT",
-  },
-  {
-    name: "MarKesha Smith",
-    superpower: "Human-in-the-loop reply flows that keep voice intact while speeding things up",
-  },
+  { name: "Bill Widmer", superpower: "Believing in people so fiercely they believe in themselves, marketing (community, SEO/GEO), copywriting, connecting people", needsHelp: "Building systems that free up time, personalized outreach at scale", image: "/profiles/billhaze.jpg" },
+  { name: "Melissa Boster", superpower: "Helping women in perimenopause and menopause find relief and prevent long term health problems", needsHelp: "Traffic and helping new members find the community", image: "/profiles/melissa.jpg" },
+  { name: "Tim Adam", superpower: "Everything Pinterest, running a Ninja Warrior Gym, Skool Group engagement, organic Skool group growth", needsHelp: "Converting more members to paid tiers", image: "/profiles/timadam.jpg" },
+  { name: "Julianne Anderson", superpower: "Storytelling, connecting with people, making people laugh", image: "/profiles/julianneanderson.jpg" },
+  { name: "Matthew Burns", superpower: "Finding parked cars and building customer journeys (monday.com consulting), AI discoverability workshops", needsHelp: "Finding more community builders to collaborate with", image: "/profiles/mattburns.jpeg" },
+  { name: "Desmond Spann", superpower: "The art of fulfillment, inner work, emotional wellbeing, poetry, freestyling, growth rap", needsHelp: "Upgrades to paid memberships", image: "/profiles/desmond.jpg" },
+  { name: "Dr. Melissa Partaka", superpower: "Helping others discover their passions and put them into action to create a life around them", needsHelp: "Automation, particularly a chat buddy for responses", image: "/profiles/drmelissa.jpg" },
+  { name: "Nick Nebelsky", superpower: "Using humor and sincerity to build relationships, being direct, witty, and observant, creating AI films", needsHelp: "Structure for ideas, sales strategy", image: "/profiles/nickneb.jpg" },
+  { name: "Tony Sibbald", superpower: "Helping people calm their mind and body, let go of anxiety and exhaustion, feel happier and more alive", needsHelp: "Believing in doing the same online as in-person", image: "/profiles/tonysibb.jpg" },
+  { name: "Theresa Elliott", superpower: "Idea generation, seeing real potential and opportunities where others see obstacles, creating routines and strategies", needsHelp: "Basic back-end web development skills", image: "/profiles/theresa.jpg" },
+  { name: "Elfina Luk", superpower: "Seeing the deeper truth to a person's being, helping them show up as their true selves with deep self love", needsHelp: "Marketing and promotion", image: "/profiles/elfina.jpeg" },
+  { name: "Rodney Thompson", superpower: "Turning messy ideas into simple, repeatable systems around planning, decision-making, and staying steady", needsHelp: "Communicating systems clearly", image: "/profiles/rodney.jpg" },
+  { name: "Jeniece Drake", superpower: "Helping people take their ideas and build out a workable roadmap to make it a reality", image: "/profiles/JenieceDrake.jpg" },
+  { name: "Elmo Anticamara", superpower: "General Virtual Assistant turning daily tasks into organized, stress-free operations", needsHelp: "Scaling systems and workflows for multiple clients", image: "/profiles/elmo.jpg" },
+  { name: "Khent Lj", superpower: "Making strengths visible and turning knowledge into actionable help", image: "/profiles/khent.jpg" },
+  { name: "Ma. Socorro Castro", superpower: "Helping clients get results with services provided", needsHelp: "Streamlining content creation and marketing", image: "/profiles/socorro.jpeg" },
+  { name: "Suzanne Bell", superpower: "Mole whacker - taking care of whatever comes up while doing other things, quick task-switching", image: "/profiles/suzannebell.jpg" },
+  { name: "Vinayak Ramesh", superpower: "Amazon KDP publishing (non-fiction), faceless YT automation channels, copywriting/email marketing", needsHelp: "Ways to monetize newsletter", image: "/profiles/vinayak.jpeg" },
+  { name: "Iris Ocariza", superpower: "Being patient", needsHelp: "Learning n8n and vibe coding", image: "/profiles/irisoca.jpg" },
+  { name: "Tim Norris", superpower: "Creativity in passion", needsHelp: "Packaging value simply so people see it", image: "/profiles/timnorris.jpeg" },
+  { name: "Sybil Hall", superpower: "Empathy and listening", needsHelp: "Getting more premium and VIP members", image: "/profiles/sybil.jpg" },
+  { name: "Adam Formanek", superpower: "Turning ideas for games into real, repeatable experiences - engineering rules, props, scoring, pacing", needsHelp: "Starting a Skool community", image: "/profiles/adamfor.jpg" },
+  { name: "Kerry Souter", superpower: "Writing comedy and storytelling", needsHelp: "Being more present as opposed to performative", image: "/profiles/kerrysouter.jpg" },
+  { name: "Dr. Peninah Wood Ph.D", superpower: "Intelligence and a quick sense of humor", needsHelp: "Getting members", image: "/profiles/drpeninah.jpg" },
+  { name: "Elizabeth Jaworski", superpower: "Self-awareness and growth mindset", needsHelp: "Working on inner critic", image: "/profiles/elizabethjaw.jpg" },
+  { name: "Liisa Reimann", superpower: "The Funnel Fixer - asking clarifying questions about marketing ecosystems, connecting the dots, steering dragon boats", needsHelp: "Business back-end strategy, financial forecasting", image: "/profiles/liisa.jpeg" },
+  { name: "Nathaniel Parant", superpower: "Articulate expression & imagination - a synthesis of Heartist, Cosmedian, and Mystic", needsHelp: "System design that organizes a team", image: "/profiles/nathaniel.jpg" },
+  { name: "Lisa Drennon", superpower: "Wealth Activator - turning money chaos into calm, strategic cash flow without restrictive budgets or shame", needsHelp: "Expanding visibility and collaborations", image: "/profiles/lisadrennon.jpg" },
+  { name: "Eric Bryan Gonzales", superpower: "Seeing beyond the obvious - the potential and opportunity in people and business along with the path to get there", needsHelp: "Starting networking and live calls", image: "/profiles/ericbryan.jpg" },
+  { name: "London Patton", superpower: "Building systems with ChatGPT", image: "/profiles/londonpatton.jpg" },
+  { name: "MarKesha Smith", superpower: "Human-in-the-loop reply flows that keep voice intact while speeding things up", image: "/profiles/markesha.jpeg" },
+  { name: "Jesse Niall", superpower: "Incredibly hyperfocused on AI, amazing group facilitator and counselor, public speaking, getting people into their heart to heal from trauma", needsHelp: "A roadmap to stick to, shiny object syndrome and FOMO, sticking to systems with ADHD", image: "/profiles/jessenail.jpg" },
+  { name: "Marisa Nunziato", superpower: "Helping women see the bigger picture of their health - how hormones, the endocrine system, and perimenopause/menopause are all interconnected with the body as a whole", image: "/profiles/marisa.jpg" },
+  { name: "Kim Job", superpower: "Seeing subconscious stories and patterns in minutes, helping business owners shift from the inside out", needsHelp: "Adding Skool to high ticket offers that are already working (tired of launching)", image: "/profiles/kimjob.jpeg" },
+  { name: "Riikka V", superpower: "Helping others realise their potential, feel safe and confident enough to express themselves, communicating in several languages simultaneously", needsHelp: "Finding her voice, structuring and scheduling content to be engaging", image: "/profiles/riikka.jpg" },
+  { name: "Hil Kane", superpower: "All things visual - video ideas, editing, CapCut, YouTube, TikTok, creating AI avatar videos, artistic balance, flow, and design", image: "/profiles/hilkane.jpg" },
+  { name: "Mary Nunaley", superpower: "Staying calm in a crisis and knowing the next step, making complex ideas simple (usually relating them to food), bringing fun into stressful times", needsHelp: "Understanding the structure behind AI Studio to effectively build apps", image: "/profiles/marynun.jpg" },
 ];
 
 export default function Family() {
@@ -275,15 +160,15 @@ export default function Family() {
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-[#FAF6E3]/10 bg-[#0A0A0A]/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-script text-3xl">
-            Ninja AI
+            Recess
           </Link>
           <a
-            href="https://www.skool.com/ninjas/about"
+            href="https://www.skool.com/recess/about"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#D4A853] text-[#0A0A0A] px-6 py-2 rounded-full font-sans font-semibold hover:bg-[#c49943] transition-colors"
           >
-            Join Ninja AI
+            Join Recess
           </a>
         </div>
       </header>
@@ -297,7 +182,7 @@ export default function Family() {
               The Family
             </h1>
             <p className="font-sans text-xl text-[#FAF6E3]/60 max-w-2xl mx-auto mb-10">
-              Every member brings a unique superpower. Here&apos;s who makes Ninja AI special.
+              Every member brings a unique superpower. Here&apos;s who makes Recess special.
             </p>
 
             {/* Search */}
@@ -347,12 +232,16 @@ export default function Family() {
                 key={index}
                 className="p-6 bg-[#0A0A0A]/70 backdrop-blur-sm border border-[#FAF6E3]/20 rounded-2xl hover:border-[#D4A853]/50 hover:bg-[#0A0A0A]/80 transition-all group"
               >
-                {/* Avatar placeholder with initials */}
+                {/* Avatar with image or initials */}
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D4A853]/50 to-[#9EB1C7]/50 flex items-center justify-center flex-shrink-0">
-                    <span className="font-serif text-lg text-white font-semibold">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </span>
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D4A853]/50 to-[#9EB1C7]/50 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {member.image ? (
+                      <Image src={member.image} alt={member.name} width={48} height={48} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-serif text-lg text-white font-semibold">
+                        {member.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <h3 className="font-serif text-xl font-semibold text-white group-hover:text-[#D4A853] transition-colors">
@@ -399,12 +288,12 @@ export default function Family() {
                 Bring your superpower. We&apos;ll help you grow it.
               </p>
               <a
-                href="https://www.skool.com/ninjas/about"
+                href="https://www.skool.com/recess/about"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block bg-[#D4A853] text-[#0A0A0A] px-8 py-4 rounded-full font-sans font-semibold hover:bg-[#c49943] transition-colors"
               >
-                Join Ninja AI
+                Join Recess
               </a>
             </div>
           </div>
@@ -415,15 +304,15 @@ export default function Family() {
       <footer className="relative z-10 py-16 px-8 border-t border-[#FAF6E3]/10 bg-[#0A0A0A]/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <Link href="/" className="font-script text-3xl">
-            Ninja AI
+            Recess
           </Link>
           <div className="flex gap-8 font-sans text-sm text-[#FAF6E3]/60">
             <Link href="/" className="hover:text-[#FAF6E3] transition-colors">Home</Link>
             <Link href="/power-map" className="hover:text-[#FAF6E3] transition-colors">Power Map</Link>
             <Link href="/affiliates" className="hover:text-[#FAF6E3] transition-colors">Affiliates</Link>
-            <a href="https://www.skool.com/ninjas/about" target="_blank" rel="noopener noreferrer" className="hover:text-[#FAF6E3] transition-colors">Community</a>
+            <a href="https://www.skool.com/recess/about" target="_blank" rel="noopener noreferrer" className="hover:text-[#FAF6E3] transition-colors">Community</a>
           </div>
-          <span className="font-sans text-xs text-[#FAF6E3]/30"><a href="/admin" className="hover:text-[#FAF6E3]/50 transition-colors">&copy;</a> 2026 Ninja AI Automation. All rights reserved.</span>
+          <span className="font-sans text-xs text-[#FAF6E3]/30"><a href="/admin" className="hover:text-[#FAF6E3]/50 transition-colors">&copy;</a> 2026 Recess. All rights reserved.</span>
         </div>
       </footer>
     </div>

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import * as d3 from "d3";
 import {
@@ -16,13 +18,16 @@ import {
 } from "lucide-react";
 
 // Video background
-const VIDEO_URL =
-  "https://res.cloudinary.com/dzlnqcmqn/video/upload/q_auto,f_auto/v1769038060/18_u4hwoe.mp4";
+const VIDEO_URL = "/rvids/28.mp4";
 
 function getPosterFromVideo(videoUrl: string): string {
-  return videoUrl
-    .replace("/video/upload/q_auto,f_auto/", "/video/upload/so_0,f_jpg,q_auto/")
-    .replace(".mp4", ".jpg");
+  // For Cloudinary URLs, generate poster; for local videos, return empty
+  if (videoUrl.includes("cloudinary")) {
+    return videoUrl
+      .replace("/video/upload/q_auto,f_auto/", "/video/upload/so_0,f_jpg,q_auto/")
+      .replace(".mp4", ".jpg");
+  }
+  return "";
 }
 
 function BackgroundVideo({ src }: { src: string }) {
@@ -84,41 +89,47 @@ interface FamilyMember {
   name: string;
   superpower: string;
   needsHelp?: string;
+  image?: string;
 }
 
 const familyMembers: FamilyMember[] = [
-  { id: 1, name: "Bill Widmer", superpower: "Believing in people so fiercely they believe in themselves, marketing (community, SEO/GEO), copywriting, connecting people", needsHelp: "Building systems that free up time, personalized outreach at scale" },
-  { id: 2, name: "Melissa Boster", superpower: "Helping women in perimenopause and menopause find relief and prevent long term health problems", needsHelp: "Traffic and helping new members find the community" },
-  { id: 3, name: "Tim Adam", superpower: "Everything Pinterest, running a Ninja Warrior Gym, Skool Group engagement, organic Skool group growth", needsHelp: "Converting more members to paid tiers" },
-  { id: 4, name: "Julianne Anderson", superpower: "Storytelling, connecting with people, making people laugh" },
-  { id: 5, name: "Matthew Burns", superpower: "Finding parked cars and building customer journeys (monday.com consulting), AI discoverability workshops", needsHelp: "Finding more community builders to collaborate with" },
-  { id: 6, name: "Desmond Spann", superpower: "The art of fulfillment, inner work, emotional wellbeing, poetry, freestyling, growth rap", needsHelp: "Upgrades to paid memberships" },
-  { id: 7, name: "Dr. Melissa Partaka", superpower: "Helping others discover their passions and put them into action to create a life around them", needsHelp: "Automation, particularly a chat buddy for responses" },
-  { id: 8, name: "Nick Nebelsky", superpower: "Using humor and sincerity to build relationships, being direct, witty, and observant, creating AI films", needsHelp: "Structure for ideas, sales strategy" },
-  { id: 9, name: "Tony Sibbald", superpower: "Helping people calm their mind and body, let go of anxiety and exhaustion, feel happier and more alive", needsHelp: "Believing in doing the same online as in-person" },
-  { id: 10, name: "Theresa Elliott", superpower: "Idea generation, seeing real potential and opportunities where others see obstacles, creating routines and strategies", needsHelp: "Basic back-end web development skills" },
-  { id: 11, name: "Elfina Luk", superpower: "Seeing the deeper truth to a person's being, helping them show up as their true selves with deep self love", needsHelp: "Marketing and promotion" },
-  { id: 12, name: "Rodney Thompson", superpower: "Turning messy ideas into simple, repeatable systems around planning, decision-making, and staying steady", needsHelp: "Communicating systems clearly" },
-  { id: 13, name: "Jeniece Drake", superpower: "Helping people take their ideas and build out a workable roadmap to make it a reality" },
-  { id: 14, name: "Elmo Anticamara", superpower: "General Virtual Assistant turning daily tasks into organized, stress-free operations", needsHelp: "Scaling systems and workflows for multiple clients" },
-  { id: 15, name: "Khent Lj", superpower: "Making strengths visible and turning knowledge into actionable help" },
-  { id: 16, name: "Ma. Socorro Castro", superpower: "Helping clients get results with services provided", needsHelp: "Streamlining content creation and marketing" },
-  { id: 17, name: "Suzanne Bell", superpower: "Mole whacker - taking care of whatever comes up while doing other things, quick task-switching" },
-  { id: 18, name: "Vinayak Ramesh", superpower: "Amazon KDP publishing (non-fiction), faceless YT automation channels, copywriting/email marketing", needsHelp: "Ways to monetize newsletter" },
-  { id: 19, name: "Iris Ocariza", superpower: "Being patient", needsHelp: "Learning n8n and vibe coding" },
-  { id: 20, name: "Tim Norris", superpower: "Creativity in passion", needsHelp: "Packaging value simply so people see it" },
-  { id: 21, name: "Sybil Hall", superpower: "Empathy and listening", needsHelp: "Getting more premium and VIP members" },
-  { id: 22, name: "Adam Formanek", superpower: "Turning ideas for games into real, repeatable experiences - engineering rules, props, scoring, pacing", needsHelp: "Starting a Skool community" },
-  { id: 23, name: "Kerry Souter", superpower: "Writing comedy and storytelling", needsHelp: "Being more present as opposed to performative" },
-  { id: 24, name: "Dr. Peninah Wood Ph.D", superpower: "Intelligence and a quick sense of humor", needsHelp: "Getting members" },
-  { id: 25, name: "Elizabeth Jaworski", superpower: "Self-awareness and growth mindset", needsHelp: "Working on inner critic" },
-  { id: 26, name: "Liisa Reimann", superpower: "The Funnel Fixer - asking clarifying questions about marketing ecosystems, connecting the dots, steering dragon boats", needsHelp: "Business back-end strategy, financial forecasting" },
-  { id: 27, name: "Nathaniel Parant", superpower: "Articulate expression & imagination - a synthesis of Heartist, Cosmedian, and Mystic", needsHelp: "System design that organizes a team" },
-  { id: 28, name: "Benjamin Ross", superpower: "Fast scaling, viral magnets", needsHelp: "Traffic and visibility" },
-  { id: 29, name: "Lisa Drennon", superpower: "Wealth Activator - turning money chaos into calm, strategic cash flow without restrictive budgets or shame", needsHelp: "Expanding visibility and collaborations" },
-  { id: 30, name: "Eric Bryan Gonzales", superpower: "Seeing beyond the obvious - the potential and opportunity in people and business along with the path to get there", needsHelp: "Starting networking and live calls" },
-  { id: 31, name: "London Patton", superpower: "Building systems with ChatGPT" },
-  { id: 32, name: "MarKesha Smith", superpower: "Human-in-the-loop reply flows that keep voice intact while speeding things up" },
+  { id: 1, name: "Bill Widmer", superpower: "Believing in people so fiercely they believe in themselves, marketing (community, SEO/GEO), copywriting, connecting people", needsHelp: "Building systems that free up time, personalized outreach at scale", image: "/profiles/billhaze.jpg" },
+  { id: 2, name: "Melissa Boster", superpower: "Helping women in perimenopause and menopause find relief and prevent long term health problems", needsHelp: "Traffic and helping new members find the community", image: "/profiles/melissa.jpg" },
+  { id: 3, name: "Tim Adam", superpower: "Everything Pinterest, running a Ninja Warrior Gym, Skool Group engagement, organic Skool group growth", needsHelp: "Converting more members to paid tiers", image: "/profiles/timadam.jpg" },
+  { id: 4, name: "Julianne Anderson", superpower: "Storytelling, connecting with people, making people laugh", image: "/profiles/julianneanderson.jpg" },
+  { id: 5, name: "Matthew Burns", superpower: "Finding parked cars and building customer journeys (monday.com consulting), AI discoverability workshops", needsHelp: "Finding more community builders to collaborate with", image: "/profiles/mattburns.jpeg" },
+  { id: 6, name: "Desmond Spann", superpower: "The art of fulfillment, inner work, emotional wellbeing, poetry, freestyling, growth rap", needsHelp: "Upgrades to paid memberships", image: "/profiles/desmond.jpg" },
+  { id: 7, name: "Dr. Melissa Partaka", superpower: "Helping others discover their passions and put them into action to create a life around them", needsHelp: "Automation, particularly a chat buddy for responses", image: "/profiles/drmelissa.jpg" },
+  { id: 8, name: "Nick Nebelsky", superpower: "Using humor and sincerity to build relationships, being direct, witty, and observant, creating AI films", needsHelp: "Structure for ideas, sales strategy", image: "/profiles/nickneb.jpg" },
+  { id: 9, name: "Tony Sibbald", superpower: "Helping people calm their mind and body, let go of anxiety and exhaustion, feel happier and more alive", needsHelp: "Believing in doing the same online as in-person", image: "/profiles/tonysibb.jpg" },
+  { id: 10, name: "Theresa Elliott", superpower: "Idea generation, seeing real potential and opportunities where others see obstacles, creating routines and strategies", needsHelp: "Basic back-end web development skills", image: "/profiles/theresa.jpg" },
+  { id: 11, name: "Elfina Luk", superpower: "Seeing the deeper truth to a person's being, helping them show up as their true selves with deep self love", needsHelp: "Marketing and promotion", image: "/profiles/elfina.jpeg" },
+  { id: 12, name: "Rodney Thompson", superpower: "Turning messy ideas into simple, repeatable systems around planning, decision-making, and staying steady", needsHelp: "Communicating systems clearly", image: "/profiles/rodney.jpg" },
+  { id: 13, name: "Jeniece Drake", superpower: "Helping people take their ideas and build out a workable roadmap to make it a reality", image: "/profiles/JenieceDrake.jpg" },
+  { id: 14, name: "Elmo Anticamara", superpower: "General Virtual Assistant turning daily tasks into organized, stress-free operations", needsHelp: "Scaling systems and workflows for multiple clients", image: "/profiles/elmo.jpg" },
+  { id: 15, name: "Khent Lj", superpower: "Making strengths visible and turning knowledge into actionable help", image: "/profiles/khent.jpg" },
+  { id: 16, name: "Ma. Socorro Castro", superpower: "Helping clients get results with services provided", needsHelp: "Streamlining content creation and marketing", image: "/profiles/socorro.jpeg" },
+  { id: 17, name: "Suzanne Bell", superpower: "Mole whacker - taking care of whatever comes up while doing other things, quick task-switching", image: "/profiles/suzannebell.jpg" },
+  { id: 18, name: "Vinayak Ramesh", superpower: "Amazon KDP publishing (non-fiction), faceless YT automation channels, copywriting/email marketing", needsHelp: "Ways to monetize newsletter", image: "/profiles/vinayak.jpeg" },
+  { id: 19, name: "Iris Ocariza", superpower: "Being patient", needsHelp: "Learning n8n and vibe coding", image: "/profiles/irisoca.jpg" },
+  { id: 20, name: "Tim Norris", superpower: "Creativity in passion", needsHelp: "Packaging value simply so people see it", image: "/profiles/timnorris.jpeg" },
+  { id: 21, name: "Sybil Hall", superpower: "Empathy and listening", needsHelp: "Getting more premium and VIP members", image: "/profiles/sybil.jpg" },
+  { id: 22, name: "Adam Formanek", superpower: "Turning ideas for games into real, repeatable experiences - engineering rules, props, scoring, pacing", needsHelp: "Starting a Skool community", image: "/profiles/adamfor.jpg" },
+  { id: 23, name: "Kerry Souter", superpower: "Writing comedy and storytelling", needsHelp: "Being more present as opposed to performative", image: "/profiles/kerrysouter.jpg" },
+  { id: 24, name: "Dr. Peninah Wood Ph.D", superpower: "Intelligence and a quick sense of humor", needsHelp: "Getting members", image: "/profiles/drpeninah.jpg" },
+  { id: 25, name: "Elizabeth Jaworski", superpower: "Self-awareness and growth mindset", needsHelp: "Working on inner critic", image: "/profiles/elizabethjaw.jpg" },
+  { id: 26, name: "Liisa Reimann", superpower: "The Funnel Fixer - asking clarifying questions about marketing ecosystems, connecting the dots, steering dragon boats", needsHelp: "Business back-end strategy, financial forecasting", image: "/profiles/liisa.jpeg" },
+  { id: 27, name: "Nathaniel Parant", superpower: "Articulate expression & imagination - a synthesis of Heartist, Cosmedian, and Mystic", needsHelp: "System design that organizes a team", image: "/profiles/nathaniel.jpg" },
+  { id: 29, name: "Lisa Drennon", superpower: "Wealth Activator - turning money chaos into calm, strategic cash flow without restrictive budgets or shame", needsHelp: "Expanding visibility and collaborations", image: "/profiles/lisadrennon.jpg" },
+  { id: 30, name: "Eric Bryan Gonzales", superpower: "Seeing beyond the obvious - the potential and opportunity in people and business along with the path to get there", needsHelp: "Starting networking and live calls", image: "/profiles/ericbryan.jpg" },
+  { id: 31, name: "London Patton", superpower: "Building systems with ChatGPT", image: "/profiles/londonpatton.jpg" },
+  { id: 32, name: "MarKesha Smith", superpower: "Human-in-the-loop reply flows that keep voice intact while speeding things up", image: "/profiles/markesha.jpeg" },
+  { id: 33, name: "Jesse Niall", superpower: "Incredibly hyperfocused on AI, amazing group facilitator and counselor, public speaking, getting people into their heart to heal from trauma", needsHelp: "A roadmap to stick to, shiny object syndrome and FOMO, sticking to systems with ADHD", image: "/profiles/jessenail.jpg" },
+  { id: 34, name: "Marisa Nunziato", superpower: "Helping women see the bigger picture of their health - how hormones, the endocrine system, and perimenopause/menopause are all interconnected with the body as a whole", image: "/profiles/marisa.jpg" },
+  { id: 35, name: "Kim Job", superpower: "Seeing subconscious stories and patterns in minutes, helping business owners shift from the inside out", needsHelp: "Adding Skool to high ticket offers that are already working (tired of launching)", image: "/profiles/kimjob.jpeg" },
+  { id: 36, name: "Riikka V", superpower: "Helping others realise their potential, feel safe and confident enough to express themselves, communicating in several languages simultaneously", needsHelp: "Finding her voice, structuring and scheduling content to be engaging", image: "/profiles/riikka.jpg" },
+  { id: 37, name: "Hil Kane", superpower: "All things visual - video ideas, editing, CapCut, YouTube, TikTok, creating AI avatar videos, artistic balance, flow, and design", image: "/profiles/hilkane.jpg" },
+  { id: 38, name: "Mary Nunaley", superpower: "Staying calm in a crisis and knowing the next step, making complex ideas simple (usually relating them to food), bringing fun into stressful times", needsHelp: "Understanding the structure behind AI Studio to effectively build apps", image: "/profiles/marynun.jpg" },
 ];
 
 // Skill categories for organizing
@@ -179,14 +190,14 @@ function PowerMatchCards({ members }: { members: FamilyMember[] }) {
   }, [selectedMember, matches]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="min-h-full flex flex-col">
       <div className="text-center mb-8">
         <h2 className="font-serif text-3xl mb-2">Power Match Cards</h2>
         <p className="text-[#FAF6E3]/60 font-sans">Click a member to see their connections</p>
       </div>
 
-      <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 mb-8">
+      <div className="flex-1 overflow-visible pb-8">
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 mb-8 pt-4 px-2">
           {members.map((member) => {
             const category = getMemberCategory(member);
             const isSelected = selectedMember?.id === member.id;
@@ -196,7 +207,7 @@ function PowerMatchCards({ members }: { members: FamilyMember[] }) {
               <motion.button
                 key={member.id}
                 onClick={() => setSelectedMember(isSelected ? null : member)}
-                className={`relative p-3 rounded-xl border transition-all ${
+                className={`relative p-3 rounded-xl border transition-all cursor-pointer ${
                   isSelected
                     ? "border-[#D4A853] bg-[#D4A853]/20 scale-110 z-10"
                     : "border-[#FAF6E3]/20 bg-[#0A0A0A]/50 hover:border-[#FAF6E3]/40"
@@ -205,10 +216,14 @@ function PowerMatchCards({ members }: { members: FamilyMember[] }) {
                 whileTap={{ scale: 0.95 }}
               >
                 <div
-                  className="w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2"
+                  className="w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2 overflow-hidden"
                   style={{ backgroundColor: category.color + "40", borderColor: category.color, borderWidth: 2 }}
                 >
-                  <span className="font-serif text-sm font-bold text-white">{initials}</span>
+                  {member.image ? (
+                    <Image src={member.image} alt={member.name} width={48} height={48} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-serif text-sm font-bold text-white">{initials}</span>
+                  )}
                 </div>
                 <p className="font-sans text-xs text-center text-white/80 truncate">{member.name.split(" ")[0]}</p>
                 {isSelected && (
@@ -252,8 +267,12 @@ function PowerMatchCards({ members }: { members: FamilyMember[] }) {
                     <div className="space-y-2">
                       {memberMatches.canHelp.map((match, i) => (
                         <div key={i} className="flex items-center gap-3 p-3 bg-[#6B8E6B]/10 rounded-lg border border-[#6B8E6B]/30">
-                          <div className="w-8 h-8 rounded-full bg-[#6B8E6B]/30 flex items-center justify-center">
-                            <span className="font-serif text-xs">{match.helpee.name.split(" ").map((n) => n[0]).join("")}</span>
+                          <div className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full bg-[#6B8E6B]/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {match.helpee.image ? (
+                              <Image src={match.helpee.image} alt={match.helpee.name} width={32} height={32} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="font-serif text-xs">{match.helpee.name.split(" ").map((n) => n[0]).join("")}</span>
+                            )}
                           </div>
                           <div>
                             <p className="font-sans text-sm text-white">{match.helpee.name}</p>
@@ -263,7 +282,11 @@ function PowerMatchCards({ members }: { members: FamilyMember[] }) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[#FAF6E3]/40 font-sans text-sm italic">No direct matches found</p>
+                    <div className="p-3 bg-[#6B8E6B]/10 rounded-lg border border-[#6B8E6B]/20">
+                      <p className="font-sans text-sm text-[#FAF6E3]/70">
+                        {selectedMember.name.split(" ")[0]} can help people who need <span className="text-[#6B8E6B]">{selectedMember.superpower.toLowerCase()}</span>
+                      </p>
+                    </div>
                   )}
                 </div>
 
@@ -275,8 +298,12 @@ function PowerMatchCards({ members }: { members: FamilyMember[] }) {
                     <div className="space-y-2">
                       {memberMatches.needsFrom.map((match, i) => (
                         <div key={i} className="flex items-center gap-3 p-3 bg-[#9B6B9B]/10 rounded-lg border border-[#9B6B9B]/30">
-                          <div className="w-8 h-8 rounded-full bg-[#9B6B9B]/30 flex items-center justify-center">
-                            <span className="font-serif text-xs">{match.helper.name.split(" ").map((n) => n[0]).join("")}</span>
+                          <div className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full bg-[#9B6B9B]/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {match.helper.image ? (
+                              <Image src={match.helper.image} alt={match.helper.name} width={32} height={32} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="font-serif text-xs">{match.helper.name.split(" ").map((n) => n[0]).join("")}</span>
+                            )}
                           </div>
                           <div>
                             <p className="font-sans text-sm text-white">{match.helper.name}</p>
@@ -286,7 +313,15 @@ function PowerMatchCards({ members }: { members: FamilyMember[] }) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[#FAF6E3]/40 font-sans text-sm italic">No direct matches found</p>
+                    <div className="p-3 bg-[#9B6B9B]/10 rounded-lg border border-[#9B6B9B]/20">
+                      <p className="font-sans text-sm text-[#FAF6E3]/70">
+                        {selectedMember.needsHelp ? (
+                          <>{selectedMember.name.split(" ")[0]} is looking for help with <span className="text-[#9B6B9B]">{selectedMember.needsHelp.toLowerCase()}</span></>
+                        ) : (
+                          <>{selectedMember.name.split(" ")[0]} is open to connecting with the community</>
+                        )}
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -299,11 +334,12 @@ function PowerMatchCards({ members }: { members: FamilyMember[] }) {
 }
 
 // ============================================
-// VISUALIZATION 2: Network Graph
+// VISUALIZATION 2: Network Graph (Revamped)
 // ============================================
 function NetworkGraph({ members }: { members: FamilyMember[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoveredNode, setHoveredNode] = useState<FamilyMember | null>(null);
+  const [selectedNode, setSelectedNode] = useState<FamilyMember | null>(null);
   const matches = useMemo(() => findMatches(members), [members]);
 
   useEffect(() => {
@@ -314,6 +350,8 @@ function NetworkGraph({ members }: { members: FamilyMember[] }) {
 
     const width = svgRef.current.clientWidth;
     const height = svgRef.current.clientHeight;
+    const nodeRadius = 28;
+    const padding = 50;
 
     // Create nodes and links
     const nodes = members.map((m) => ({ ...m, category: getMemberCategory(m) }));
@@ -323,21 +361,52 @@ function NetworkGraph({ members }: { members: FamilyMember[] }) {
       skill: m.skill,
     }));
 
-    // Create force simulation
-    const simulation = d3
-      .forceSimulation(nodes as d3.SimulationNodeDatum[])
-      .force("link", d3.forceLink(links).id((d: unknown) => (d as FamilyMember).id).distance(120))
-      .force("charge", d3.forceManyBody().strength(-200))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(40));
+    // Create defs for clip paths and image patterns
+    const defs = svg.append("defs");
 
     // Add glow filter
-    const defs = svg.append("defs");
-    const filter = defs.append("filter").attr("id", "glow");
-    filter.append("feGaussianBlur").attr("stdDeviation", "3").attr("result", "coloredBlur");
+    const filter = defs.append("filter").attr("id", "glow").attr("x", "-50%").attr("y", "-50%").attr("width", "200%").attr("height", "200%");
+    filter.append("feGaussianBlur").attr("stdDeviation", "4").attr("result", "coloredBlur");
     const feMerge = filter.append("feMerge");
     feMerge.append("feMergeNode").attr("in", "coloredBlur");
     feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+    // Create clip paths and patterns for each member with image
+    nodes.forEach((member) => {
+      // Clip path for circular image
+      defs.append("clipPath")
+        .attr("id", `clip-${member.id}`)
+        .append("circle")
+        .attr("r", nodeRadius - 2)
+        .attr("cx", 0)
+        .attr("cy", 0);
+
+      // Image pattern if member has image
+      if (member.image) {
+        defs.append("pattern")
+          .attr("id", `img-${member.id}`)
+          .attr("width", 1)
+          .attr("height", 1)
+          .attr("patternContentUnits", "objectBoundingBox")
+          .append("image")
+          .attr("href", member.image)
+          .attr("width", 1)
+          .attr("height", 1)
+          .attr("preserveAspectRatio", "xMidYMid slice");
+      }
+    });
+
+    // Create force simulation with bounded positions
+    const simulation = d3
+      .forceSimulation(nodes as d3.SimulationNodeDatum[])
+      .force("link", d3.forceLink(links).id((d: unknown) => (d as FamilyMember).id).distance(100).strength(0.3))
+      .force("charge", d3.forceManyBody().strength(-150))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("collision", d3.forceCollide().radius(nodeRadius + 8))
+      .force("x", d3.forceX(width / 2).strength(0.05))
+      .force("y", d3.forceY(height / 2).strength(0.05))
+      .alphaDecay(0.02)
+      .velocityDecay(0.4);
 
     // Draw links
     const link = svg
@@ -346,8 +415,8 @@ function NetworkGraph({ members }: { members: FamilyMember[] }) {
       .data(links)
       .join("line")
       .attr("stroke", "#D4A853")
-      .attr("stroke-opacity", 0.3)
-      .attr("stroke-width", 1.5);
+      .attr("stroke-opacity", 0.4)
+      .attr("stroke-width", 2);
 
     // Draw nodes
     const node = svg
@@ -369,8 +438,8 @@ function NetworkGraph({ members }: { members: FamilyMember[] }) {
         })
         .on("drag", (event: d3.D3DragEvent<SVGGElement, unknown, unknown>, d: unknown) => {
           const datum = d as d3.SimulationNodeDatum;
-          datum.fx = event.x;
-          datum.fy = event.y;
+          datum.fx = Math.max(padding, Math.min(width - padding, event.x));
+          datum.fy = Math.max(padding, Math.min(height - padding, event.y));
         })
         .on("end", (event: d3.D3DragEvent<SVGGElement, unknown, unknown>, d: unknown) => {
           if (!event.active) simulation.alphaTarget(0);
@@ -380,33 +449,52 @@ function NetworkGraph({ members }: { members: FamilyMember[] }) {
         })
     );
 
-    // Node circles
+    // Background circle with category color
     node
       .append("circle")
-      .attr("r", 24)
-      .attr("fill", (d) => d.category.color + "40")
+      .attr("r", nodeRadius)
+      .attr("fill", (d) => d.category.color + "60")
       .attr("stroke", (d) => d.category.color)
-      .attr("stroke-width", 2)
+      .attr("stroke-width", 3)
       .attr("filter", "url(#glow)");
 
-    // Node text
-    node
-      .append("text")
-      .text((d) => d.name.split(" ").map((n) => n[0]).join(""))
-      .attr("text-anchor", "middle")
-      .attr("dy", "0.35em")
-      .attr("fill", "#FAF6E3")
-      .attr("font-family", "Cormorant Garamond, serif")
-      .attr("font-size", "12px")
-      .attr("font-weight", "bold");
+    // Add profile image or initials
+    node.each(function(d) {
+      const g = d3.select(this);
+      if (d.image) {
+        // Profile image
+        g.append("circle")
+          .attr("r", nodeRadius - 3)
+          .attr("fill", `url(#img-${d.id})`)
+          .attr("stroke", "none");
+      } else {
+        // Initials fallback
+        g.append("text")
+          .text(d.name.split(" ").map((n: string) => n[0]).join(""))
+          .attr("text-anchor", "middle")
+          .attr("dy", "0.35em")
+          .attr("fill", "#FAF6E3")
+          .attr("font-family", "Cormorant Garamond, serif")
+          .attr("font-size", "14px")
+          .attr("font-weight", "bold");
+      }
+    });
 
-    // Hover events
+    // Hover and click events
     node
       .on("mouseenter", (_, d) => setHoveredNode(d))
-      .on("mouseleave", () => setHoveredNode(null));
+      .on("mouseleave", () => setHoveredNode(null))
+      .on("click", (_, d) => setSelectedNode(selectedNode?.id === d.id ? null : d));
 
-    // Update positions
+    // Update positions with boundary constraints
     simulation.on("tick", () => {
+      // Keep nodes within bounds
+      nodes.forEach((d) => {
+        const datum = d as d3.SimulationNodeDatum;
+        datum.x = Math.max(padding, Math.min(width - padding, datum.x ?? width / 2));
+        datum.y = Math.max(padding, Math.min(height - padding, datum.y ?? height / 2));
+      });
+
       link
         .attr("x1", (d) => (d.source as d3.SimulationNodeDatum).x ?? 0)
         .attr("y1", (d) => (d.source as d3.SimulationNodeDatum).y ?? 0)
@@ -417,31 +505,40 @@ function NetworkGraph({ members }: { members: FamilyMember[] }) {
     });
 
     return () => { simulation.stop(); };
-  }, [members, matches]);
+  }, [members, matches, selectedNode]);
+
+  const displayedMember = selectedNode || hoveredNode;
 
   return (
     <div className="h-full flex flex-col">
       <div className="text-center mb-4">
         <h2 className="font-serif text-3xl mb-2">Network Graph</h2>
-        <p className="text-[#FAF6E3]/60 font-sans">Drag nodes to explore connections</p>
+        <p className="text-[#FAF6E3]/60 font-sans">Hover or click members to see details. Drag to rearrange.</p>
       </div>
 
       <div className="flex-1 relative">
         <svg ref={svgRef} className="w-full h-full" />
 
         <AnimatePresence>
-          {hoveredNode && (
+          {displayedMember && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="absolute top-4 right-4 bg-[#0A0A0A]/90 backdrop-blur-md border border-[#FAF6E3]/20 rounded-xl p-4 max-w-xs"
             >
-              <h3 className="font-serif text-lg text-white">{hoveredNode.name}</h3>
-              <p className="text-[#D4A853] font-sans text-xs mt-1">{hoveredNode.superpower}</p>
-              {hoveredNode.needsHelp && (
+              <div className="flex items-center gap-3 mb-2">
+                {displayedMember.image && (
+                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                    <img src={displayedMember.image} alt={displayedMember.name} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <h3 className="font-serif text-lg text-white">{displayedMember.name}</h3>
+              </div>
+              <p className="text-[#D4A853] font-sans text-xs mt-1">{displayedMember.superpower}</p>
+              {displayedMember.needsHelp && (
                 <p className="text-[#FAF6E3]/50 font-sans text-xs mt-2">
-                  <span className="text-[#9EB1C7]">Needs:</span> {hoveredNode.needsHelp}
+                  <span className="text-[#9EB1C7]">Needs:</span> {displayedMember.needsHelp}
                 </p>
               )}
             </motion.div>
@@ -469,6 +566,7 @@ function ConstellationMap({ members }: { members: FamilyMember[] }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredStar, setHoveredStar] = useState<{ member: FamilyMember; x: number; y: number } | null>(null);
   const starsRef = useRef<{ member: FamilyMember; x: number; y: number; size: number; twinkle: number }[]>([]);
+  const [selectedSkill, setSelectedSkill] = useState<typeof skillCategories[0] | null>(null);
   const matches = useMemo(() => findMatches(members), [members]);
 
   useEffect(() => {
@@ -538,9 +636,14 @@ function ConstellationMap({ members }: { members: FamilyMember[] }) {
         const category = getMemberCategory(star.member);
         const twinkleSize = star.size + Math.sin(time * 2 + star.twinkle) * 1;
 
+        // Check if this star matches the selected skill filter
+        const isHighlighted = selectedSkill ? selectedSkill.keywords.some((k) =>
+          (star.member.superpower + " " + (star.member.needsHelp || "")).toLowerCase().includes(k)
+        ) : true;
+
         // Glow
         const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, twinkleSize * 4);
-        gradient.addColorStop(0, category.color + "60");
+        gradient.addColorStop(0, (isHighlighted ? category.color : "#444444") + "60");
         gradient.addColorStop(1, "transparent");
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -548,9 +651,9 @@ function ConstellationMap({ members }: { members: FamilyMember[] }) {
         ctx.fill();
 
         // Core
-        ctx.fillStyle = "#FAF6E3";
+        ctx.fillStyle = isHighlighted ? "#FAF6E3" : "#666";
         ctx.beginPath();
-        ctx.arc(star.x, star.y, twinkleSize, 0, Math.PI * 2);
+        ctx.arc(star.x, star.y, isHighlighted ? twinkleSize : twinkleSize * 0.7, 0, Math.PI * 2);
         ctx.fill();
       });
 
@@ -580,17 +683,49 @@ function ConstellationMap({ members }: { members: FamilyMember[] }) {
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [members, matches]);
+  }, [members, matches, selectedSkill]);
 
   return (
     <div className="h-full flex flex-col">
-      <div className="text-center mb-4">
+      {/* Header */}
+      <div className="text-center py-4">
         <h2 className="font-serif text-3xl mb-2">Constellation Map</h2>
-        <p className="text-[#FAF6E3]/60 font-sans">Hover over stars to reveal members</p>
+        <p className="text-[#FAF6E3]/60 font-sans mb-3">Hover over stars to reveal members</p>
+
+        {/* Skill filter tabs - all in one line */}
+        <div className="flex justify-center gap-2 flex-wrap">
+          <button
+            onClick={() => setSelectedSkill(null)}
+            className={`px-3 py-1.5 rounded-full font-sans text-xs transition-all ${
+              !selectedSkill
+                ? "bg-[#D4A853] text-[#0A0A0A] font-semibold"
+                : "bg-[#0A0A0A]/50 text-[#FAF6E3]/70 hover:text-[#FAF6E3] border border-[#FAF6E3]/20"
+            }`}
+          >
+            All
+          </button>
+          {skillCategories.map((skill) => (
+            <button
+              key={skill.name}
+              onClick={() => setSelectedSkill(selectedSkill?.name === skill.name ? null : skill)}
+              className={`px-3 py-1.5 rounded-full font-sans text-xs transition-all ${
+                selectedSkill?.name === skill.name
+                  ? "text-[#0A0A0A] font-semibold"
+                  : "bg-[#0A0A0A]/50 text-[#FAF6E3]/70 hover:text-[#FAF6E3] border border-[#FAF6E3]/20"
+              }`}
+              style={{
+                backgroundColor: selectedSkill?.name === skill.name ? skill.color : undefined,
+              }}
+            >
+              {skill.name}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="flex-1 relative">
-        <canvas ref={canvasRef} className="w-full h-full cursor-crosshair" />
+      {/* Canvas container - takes remaining space */}
+      <div className="flex-1 relative min-h-[500px]">
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full cursor-crosshair" />
 
         <AnimatePresence>
           {hoveredStar && (
@@ -598,9 +733,14 @@ function ConstellationMap({ members }: { members: FamilyMember[] }) {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute bg-[#0A0A0A]/90 backdrop-blur-md border border-[#D4A853]/50 rounded-xl p-4 pointer-events-none"
+              className="absolute bg-[#0A0A0A]/90 backdrop-blur-md border border-[#D4A853]/50 rounded-xl p-4 pointer-events-none z-20"
               style={{ left: hoveredStar.x + 20, top: hoveredStar.y - 20, maxWidth: 250 }}
             >
+              {hoveredStar.member.image && (
+                <div className="w-12 h-12 rounded-full overflow-hidden mb-2 border-2 border-[#D4A853]">
+                  <Image src={hoveredStar.member.image} alt={hoveredStar.member.name} width={48} height={48} className="w-full h-full object-cover" />
+                </div>
+              )}
               <h3 className="font-serif text-lg text-white">{hoveredStar.member.name}</h3>
               <p className="text-[#D4A853] font-sans text-xs mt-1 line-clamp-2">{hoveredStar.member.superpower}</p>
             </motion.div>
@@ -642,8 +782,8 @@ function SkillOrbit({ members }: { members: FamilyMember[] }) {
       <div className="flex-1 flex items-center justify-center">
         <div className="relative w-[500px] h-[500px]">
           {/* Center */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-[#D4A853]/20 border-2 border-[#D4A853] flex items-center justify-center z-10">
-            <span className="font-serif text-sm text-[#D4A853] text-center">Ninja AI<br />Family</span>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-[#D4A853]/20 border-2 border-[#D4A853] flex items-center justify-center z-10 overflow-hidden">
+            <Image src="/favico.png" alt="Recess" width={80} height={80} className="object-contain" />
           </div>
 
           {/* Skill planets */}
@@ -695,7 +835,7 @@ function SkillOrbit({ members }: { members: FamilyMember[] }) {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="absolute w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+                      className="absolute w-10 h-10 rounded-full flex items-center justify-center cursor-pointer overflow-hidden"
                       style={{
                         left: `calc(50% + ${x}px - 20px)`,
                         top: `calc(50% + ${y}px - 20px)`,
@@ -705,7 +845,11 @@ function SkillOrbit({ members }: { members: FamilyMember[] }) {
                       onMouseEnter={() => setHoveredMember(member)}
                       onMouseLeave={() => setHoveredMember(null)}
                     >
-                      <span className="font-serif text-[10px] text-white">{initials}</span>
+                      {member.image ? (
+                        <Image src={member.image} alt={member.name} width={40} height={40} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-serif text-[10px] text-white">{initials}</span>
+                      )}
                     </motion.div>
                   );
                 })}
@@ -725,7 +869,7 @@ function SkillOrbit({ members }: { members: FamilyMember[] }) {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="absolute w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+                      className="absolute w-10 h-10 rounded-full flex items-center justify-center cursor-pointer overflow-hidden"
                       style={{
                         left: `calc(50% + ${x}px - 20px)`,
                         top: `calc(50% + ${y}px - 20px)`,
@@ -735,7 +879,11 @@ function SkillOrbit({ members }: { members: FamilyMember[] }) {
                       onMouseEnter={() => setHoveredMember(member)}
                       onMouseLeave={() => setHoveredMember(null)}
                     >
-                      <span className="font-serif text-[10px] text-white">{initials}</span>
+                      {member.image ? (
+                        <Image src={member.image} alt={member.name} width={40} height={40} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-serif text-[10px] text-white">{initials}</span>
+                      )}
                     </motion.div>
                   );
                 })}
@@ -792,6 +940,7 @@ function SkillOrbit({ members }: { members: FamilyMember[] }) {
 function MatchFinder({ members }: { members: FamilyMember[] }) {
   const [offerFilter, setOfferFilter] = useState("");
   const [needFilter, setNeedFilter] = useState("");
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
 
   const filteredMembers = useMemo(() => {
     return members.filter((m) => {
@@ -914,16 +1063,21 @@ function MatchFinder({ members }: { members: FamilyMember[] }) {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="p-4 bg-[#0A0A0A]/60 backdrop-blur-sm border border-[#FAF6E3]/20 rounded-xl hover:border-[#D4A853]/50 transition-all"
+                onClick={() => setSelectedMember(member)}
+                className="p-4 bg-[#0A0A0A]/60 backdrop-blur-sm border border-[#FAF6E3]/20 rounded-xl hover:border-[#D4A853]/50 transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
                     style={{ backgroundColor: category.color + "40", border: `2px solid ${category.color}` }}
                   >
-                    <span className="font-serif text-sm text-white">
-                      {member.name.split(" ").map((n) => n[0]).join("")}
-                    </span>
+                    {member.image ? (
+                      <Image src={member.image} alt={member.name} width={40} height={40} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-serif text-sm text-white">
+                        {member.name.split(" ").map((n) => n[0]).join("")}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <h3 className="font-serif text-white">{member.name}</h3>
@@ -941,6 +1095,81 @@ function MatchFinder({ members }: { members: FamilyMember[] }) {
           })}
         </div>
       </div>
+
+      {/* Expanded member modal */}
+      <AnimatePresence>
+        {selectedMember && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-6"
+            onClick={() => setSelectedMember(null)}
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-[#0A0A0A]/80 backdrop-blur-sm" />
+
+            {/* Modal content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-[#0A0A0A]/95 border border-[#FAF6E3]/20 rounded-2xl p-8 max-w-lg w-full max-h-[80vh] overflow-auto"
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedMember(null)}
+                className="absolute top-4 right-4 text-[#FAF6E3]/50 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              {/* Member content */}
+              <div className="flex flex-col items-center text-center mb-6">
+                {selectedMember.image ? (
+                  <div
+                    className="w-24 h-24 rounded-full overflow-hidden mb-4"
+                    style={{ border: `3px solid ${getMemberCategory(selectedMember).color}` }}
+                  >
+                    <Image src={selectedMember.image} alt={selectedMember.name} width={96} height={96} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div
+                    className="w-24 h-24 rounded-full flex items-center justify-center mb-4"
+                    style={{ backgroundColor: getMemberCategory(selectedMember).color + "40", border: `3px solid ${getMemberCategory(selectedMember).color}` }}
+                  >
+                    <span className="font-serif text-2xl text-white">
+                      {selectedMember.name.split(" ").map((n) => n[0]).join("")}
+                    </span>
+                  </div>
+                )}
+                <h2 className="font-serif text-2xl text-white mb-1">{selectedMember.name}</h2>
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-sans"
+                  style={{ backgroundColor: getMemberCategory(selectedMember).color + "30", color: getMemberCategory(selectedMember).color }}
+                >
+                  {getMemberCategory(selectedMember).name}
+                </span>
+              </div>
+
+              {/* Superpower */}
+              <div className="mb-6">
+                <h3 className="font-sans text-sm uppercase tracking-wider text-[#D4A853] mb-2">Superpower</h3>
+                <p className="font-sans text-[#FAF6E3]/80">{selectedMember.superpower}</p>
+              </div>
+
+              {/* Needs help with */}
+              {selectedMember.needsHelp && (
+                <div>
+                  <h3 className="font-sans text-sm uppercase tracking-wider text-[#9EB1C7] mb-2">Needs Help With</h3>
+                  <p className="font-sans text-[#FAF6E3]/80">{selectedMember.needsHelp}</p>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1112,48 +1341,50 @@ function ChordDiagram({ members }: { members: FamilyMember[] }) {
 // MAIN PAGE
 // ============================================
 const visualizations = [
+  { id: "finder", name: "Match Finder", icon: Search, component: MatchFinder },
   { id: "cards", name: "Match Cards", icon: Zap, component: PowerMatchCards },
-  { id: "network", name: "Network", icon: Network, component: NetworkGraph },
   { id: "constellation", name: "Constellation", icon: Stars, component: ConstellationMap },
   { id: "orbit", name: "Skill Orbit", icon: Orbit, component: SkillOrbit },
-  { id: "finder", name: "Match Finder", icon: Search, component: MatchFinder },
-  { id: "chord", name: "Chord", icon: Circle, component: ChordDiagram },
 ];
 
-export default function PowerMap() {
-  const [activeViz, setActiveViz] = useState(visualizations[0]);
+function PowerMapContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Get view from URL, default to "finder"
+  const viewParam = searchParams.get("view") || "finder";
+  const activeViz = visualizations.find(v => v.id === viewParam) || visualizations[0];
+
+  const setActiveViz = (viz: typeof visualizations[0]) => {
+    router.push(`/power-map?view=${viz.id}`, { scroll: false });
+  };
 
   const ActiveComponent = activeViz.component;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-[#FAF6E3] relative">
+    <>
       <BackgroundVideo src={VIDEO_URL} />
 
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-[#FAF6E3]/10 bg-[#0A0A0A]/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-script text-3xl">
-            Ninja AI
+            Recess
           </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/family" className="font-sans text-sm text-[#FAF6E3]/70 hover:text-[#FAF6E3] transition-colors">
-              The Family
-            </Link>
-            <a
-              href="https://www.skool.com/ninjas/about"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#D4A853] text-[#0A0A0A] px-6 py-2 rounded-full font-sans font-semibold hover:bg-[#c49943] transition-colors"
-            >
-              Join Ninja AI
-            </a>
-          </div>
+          <a
+            href="https://www.skool.com/recess/about"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-[#D4A853] text-[#0A0A0A] px-6 py-2 rounded-full font-sans font-semibold hover:bg-[#c49943] transition-colors"
+          >
+            Join Recess
+          </a>
         </div>
       </header>
 
       {/* Main content */}
-      <main className="relative z-10 pt-24 pb-32 px-6 min-h-screen">
-        <div className="max-w-6xl mx-auto h-[calc(100vh-12rem)]">
+      <main className="relative z-10 pt-24 pb-32 px-6 min-h-screen overflow-auto">
+        <div className="max-w-6xl mx-auto min-h-[calc(100vh-12rem)]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeViz.id}
@@ -1161,7 +1392,7 @@ export default function PowerMap() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="h-full"
+              className="min-h-full"
             >
               <ActiveComponent members={familyMembers} />
             </motion.div>
@@ -1169,9 +1400,9 @@ export default function PowerMap() {
         </div>
       </main>
 
-      {/* Bottom left toggles */}
-      <div className="fixed bottom-6 left-6 z-50">
-        <div className="bg-[#0A0A0A]/90 backdrop-blur-md border border-[#FAF6E3]/20 rounded-2xl p-2 flex flex-col gap-1">
+      {/* View toggles - bottom horizontal on mobile, left vertical on desktop */}
+      <div className="fixed z-50 bottom-20 left-1/2 -translate-x-1/2 md:bottom-auto md:left-6 md:top-1/2 md:-translate-y-1/2 md:translate-x-0">
+        <div className="bg-[#0A0A0A]/90 backdrop-blur-md border border-[#FAF6E3]/20 rounded-2xl p-2 flex flex-row md:flex-col gap-1">
           {visualizations.map((viz) => {
             const Icon = viz.icon;
             const isActive = activeViz.id === viz.id;
@@ -1180,16 +1411,15 @@ export default function PowerMap() {
               <motion.button
                 key={viz.id}
                 onClick={() => setActiveViz(viz)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                className={`flex items-center justify-center md:justify-start gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-xl transition-all ${
                   isActive
                     ? "bg-[#D4A853] text-[#0A0A0A]"
                     : "text-[#FAF6E3]/70 hover:bg-[#FAF6E3]/10 hover:text-[#FAF6E3]"
                 }`}
-                whileHover={{ x: isActive ? 0 : 4 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Icon className="w-4 h-4" />
-                <span className="font-sans text-sm font-medium">{viz.name}</span>
+                <span className="hidden md:inline font-sans text-sm font-medium">{viz.name}</span>
               </motion.button>
             );
           })}
@@ -1199,9 +1429,19 @@ export default function PowerMap() {
       {/* Footer */}
       <footer className="fixed bottom-0 left-0 right-0 z-40 py-4 px-6 bg-gradient-to-t from-[#0A0A0A] to-transparent pointer-events-none">
         <div className="max-w-6xl mx-auto flex justify-end">
-          <span className="font-sans text-xs text-[#FAF6E3]/30 pointer-events-auto"><a href="/admin" className="hover:text-[#FAF6E3]/50 transition-colors">&copy;</a> 2026 Ninja AI Automation. All rights reserved.</span>
+          <span className="font-sans text-xs text-[#FAF6E3]/30 pointer-events-auto"><a href="/admin" className="hover:text-[#FAF6E3]/50 transition-colors">&copy;</a> 2026 Recess. All rights reserved.</span>
         </div>
       </footer>
+    </>
+  );
+}
+
+export default function PowerMap() {
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] text-[#FAF6E3] relative">
+      <Suspense fallback={<div className="min-h-screen bg-[#0A0A0A]" />}>
+        <PowerMapContent />
+      </Suspense>
     </div>
   );
 }
