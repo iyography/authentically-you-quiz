@@ -44,34 +44,16 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
     loadData();
   }, []);
-
-  const checkAuth = () => {
-    const auth = sessionStorage.getItem("adminAuth");
-    if (!auth) {
-      router.push("/admin/login");
-      return;
-    }
-  };
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const auth = sessionStorage.getItem("adminAuth");
-      if (!auth) {
-        router.push("/admin/login");
-        return;
-      }
-
-      const headers = {
-        Authorization: `Basic ${auth}`,
-      };
 
       const [resultsResponse, statsResponse] = await Promise.all([
-        fetch('/api/admin/quiz-results', { headers }),
-        fetch('/api/admin/quiz-results?stats=true', { headers })
+        fetch('/api/admin/quiz-results'),
+        fetch('/api/admin/quiz-results?stats=true')
       ]);
 
       if (resultsResponse.ok && statsResponse.ok) {
