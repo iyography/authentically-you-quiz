@@ -2,19 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { loadQuizResults, getQuizStats } from '@/lib/quiz-storage';
 
 function checkAuth(request: NextRequest) {
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  const authHeader = request.headers.get('authorization');
+  const sessionCookie = request.cookies.get('admin-session');
   
-  if (!authHeader) return false;
+  if (!sessionCookie) return false;
   
-  const [scheme, credentials] = authHeader.split(' ');
-  if (scheme !== 'Basic' || !credentials) return false;
-  
-  const [username, password] = Buffer.from(credentials, 'base64')
-    .toString()
-    .split(':');
-  
-  return username === 'admin' && password === adminPassword;
+  try {
+    const decoded = Buffer.from(sessionCookie.value, 'base64').toString();
+    const [username, timestamp] = decoded.split(':');
+    
+    if (username !== 'admin' || !timestamp) return false;
+    
+    // Check if session is expired (24 hours)
+    const sessionAge = Date.now() - parseInt(timestamp);
+    if (sessionAge > 24 * 60 * 60 * 1000) return false;
+    
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 export async function GET(request: NextRequest) {

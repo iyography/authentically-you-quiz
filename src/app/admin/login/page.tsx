@@ -93,25 +93,25 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-      // Create basic auth header
-      const credentials = btoa(`${username}:${password}`);
-      
-      // Test the credentials by making a request to the admin API
-      const response = await fetch("/api/admin/quiz-results?stats=true", {
+      // Use the new login API endpoint
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
         headers: {
-          Authorization: `Basic ${credentials}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({ username, password }),
       });
 
-      if (response.ok) {
-        // Store credentials in sessionStorage for the session
-        sessionStorage.setItem("adminAuth", credentials);
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Redirect to dashboard - session cookie is set by the API
         router.push("/admin/dashboard");
       } else {
-        setError("Invalid credentials. Please try again.");
+        setError(data.message || "Invalid credentials. Please try again.");
       }
     } catch (error) {
-      setError("An error occurred. Please try again.");
+      setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }

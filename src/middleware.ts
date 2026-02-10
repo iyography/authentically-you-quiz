@@ -6,47 +6,34 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  // Only protect admin routes, but allow login page
-  if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
-    // Get admin password from environment variable
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  // Only protect admin routes, but allow login page and login API
+  if (request.nextUrl.pathname.startsWith('/admin') && 
+      !request.nextUrl.pathname.startsWith('/admin/login') &&
+      !request.nextUrl.pathname.startsWith('/api/admin/login')) {
     
-    // Check for authorization header
-    const authHeader = request.headers.get('authorization');
+    // Check for session cookie
+    const sessionCookie = request.cookies.get('admin-session');
     
-    if (!authHeader) {
-      return new NextResponse('Authentication required', {
-        status: 401,
-        headers: {
-          'WWW-Authenticate': 'Basic realm="Admin Dashboard"',
-        },
-      });
+    if (!sessionCookie) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
     
-    // Parse basic auth
-    const [scheme, credentials] = authHeader.split(' ');
-    
-    if (scheme !== 'Basic' || !credentials) {
-      return new NextResponse('Invalid authentication', {
-        status: 401,
-        headers: {
-          'WWW-Authenticate': 'Basic realm="Admin Dashboard"',
-        },
-      });
-    }
-    
-    const [username, password] = Buffer.from(credentials, 'base64')
-      .toString()
-      .split(':');
-    
-    // Check credentials
-    if (username !== 'admin' || password !== adminPassword) {
-      return new NextResponse('Invalid credentials', {
-        status: 401,
-        headers: {
-          'WWW-Authenticate': 'Basic realm="Admin Dashboard"',
-        },
-      });
+    // Validate session token (basic validation)
+    try {
+      const decoded = Buffer.from(sessionCookie.value, 'base64').toString();
+      const [username, timestamp] = decoded.split(':');
+      
+      if (username !== 'admin' || !timestamp) {
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+      }
+      
+      // Check if session is expired (24 hours)
+      const sessionAge = Date.now() - parseInt(timestamp);
+      if (sessionAge > 24 * 60 * 60 * 1000) {
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+      }
+    } catch (error) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
   }
 
