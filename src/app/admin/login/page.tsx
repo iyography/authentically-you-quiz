@@ -164,19 +164,19 @@ export default function AdminLoginPage() {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="username" className="block font-sans text-sm font-medium text-[#3D3D3D] mb-2">
-                    Username
+                    Email
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <User className="h-5 w-5 text-[#6B6B6B]" />
                     </div>
                     <input
-                      type="text"
+                      type="email"
                       id="username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       className="w-full pl-12 pr-4 py-3 font-sans border border-[#3D3D3D]/20 rounded-2xl bg-white/80 placeholder-[#6B6B6B] text-[#3D3D3D] focus:outline-none focus:ring-2 focus:ring-[#C9A86C]/50 focus:border-[#C9A86C] transition-all"
-                      placeholder="Enter your username"
+                      placeholder="Enter your email address"
                       required
                     />
                   </div>

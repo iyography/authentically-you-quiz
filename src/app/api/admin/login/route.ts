@@ -7,8 +7,10 @@ export async function POST(request: NextRequest) {
     // Get admin credentials from environment
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
     
-    // Accept any credentials for development/demo
-    if (username && password) {
+    // Only allow specific email addresses with admin123 password
+    const allowedEmails = ['davidiya3@gmail.com', 'authenticallyou.ca@gmail.com'];
+    
+    if (allowedEmails.includes(username) && password === 'admin123') {
       // Create a simple session token
       const sessionToken = Buffer.from(`${username}:${Date.now()}`).toString('base64');
       
