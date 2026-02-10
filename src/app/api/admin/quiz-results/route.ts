@@ -1,37 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { loadQuizResults, getQuizStats } from '@/lib/quiz-storage';
 
-function checkAuth(request: NextRequest) {
-  const sessionCookie = request.cookies.get('admin-session');
-  
-  if (!sessionCookie) return false;
-  
-  try {
-    const decoded = Buffer.from(sessionCookie.value, 'base64').toString();
-    const [username, timestamp] = decoded.split(':');
-    
-    if (!username || !timestamp) return false;
-    
-    // Check if session is expired (24 hours)
-    const sessionAge = Date.now() - parseInt(timestamp);
-    if (sessionAge > 24 * 60 * 60 * 1000) return false;
-    
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
 export async function GET(request: NextRequest) {
-  // Check authentication
-  if (!checkAuth(request)) {
-    return new NextResponse('Authentication required', {
-      status: 401,
-      headers: {
-        'WWW-Authenticate': 'Basic realm="Admin API"',
-      },
-    });
-  }
+  // No authentication required - open access
   try {
     const { searchParams } = new URL(request.url);
     const statsOnly = searchParams.get('stats') === 'true';
